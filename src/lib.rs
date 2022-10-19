@@ -1,9 +1,8 @@
-use std::fmt::format;
 use std::io::Read;
-use std::vec;
 use std::fs::File;
 use regex::Regex;
-use std::fs;
+use minijinja::{Environment, context, Error};
+use minijinja::value::Rest;
 
 #[derive(Debug)]
 pub struct Table {
@@ -16,6 +15,13 @@ pub struct SQL {
     path: String,
     query: String,
 }
+
+
+fn ref_q(values: Rest<String>) -> String {
+    values.join(".")
+}
+
+
 
 impl SQL {
     pub fn new(path: String) -> Self {
@@ -40,6 +46,15 @@ impl SQL {
         }
         return v;
     }
+
+    pub fn get_rendered_query(&self) -> String {
+        let mut env = Environment::new();
+        env.add_function("ref", ref_q);
+        env.add_template("sql", &self.query).unwrap();
+        let tmpl = env.get_template("sql").unwrap();
+        tmpl.render(context!()).unwrap()
+    }
+
 }
 
 
@@ -66,5 +81,20 @@ mod tests {
         let tables = s.get_ref_tables();
         assert!(tables[0].name == "db.users".to_string());
         assert!(tables[1].name == "db.role".to_string());
+    }
+
+    #[test]
+    fn test_get_rendered_query() {
+        let s = SQL::new("src/sample.sql".to_string());
+        let query:String = s.get_rendered_query();
+        println!("{}", &query);
+        assert!(query == String::from("
+select 
+u.*
+, r.* 
+from db.users as u
+left join db.role as r on
+u.id = r.user_id
+".trim()));
     }
 }
