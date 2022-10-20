@@ -70,14 +70,14 @@ mod tests {
     }
     #[test]
     fn test_create_sql() {
-        let s = SQL::new("src/sample.sql".to_string());
-        assert!(s.path == "src/sample.sql".to_string());
+        let s = SQL::new("src/sample_sqls/sample.sql".to_string());
+        assert!(s.path == "src/sample_sqls/sample.sql".to_string());
         println!("{:?}", s.query);
     }
 
     #[test]
     fn test_get_ref() {
-        let s = SQL::new("src/sample.sql".to_string());
+        let s = SQL::new("src/sample_sqls/sample.sql".to_string());
         let tables = s.get_ref_tables();
         assert!(tables[0].name == "db.users".to_string());
         assert!(tables[1].name == "db.role".to_string());
@@ -85,7 +85,7 @@ mod tests {
 
     #[test]
     fn test_get_rendered_query() {
-        let s = SQL::new("src/sample.sql".to_string());
+        let s = SQL::new("src/sample_sqls/sample.sql".to_string());
         let query:String = s.get_rendered_query();
         println!("{}", &query);
         assert!(query == String::from("
