@@ -1,26 +1,43 @@
 use std::io::Read;
 use std::fs::File;
+use std::vec;
 use regex::Regex;
-use minijinja::{Environment, context, Error};
+use minijinja::{Environment, context};
 use minijinja::value::Rest;
+use serde::{Serialize, Deserialize};
 
-#[derive(Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct Table {
     name: String,
 }
 
-#[derive(Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct SQL {
-    table: Table,
     path: String,
     query: String,
 }
 
+#[derive(Serialize, Deserialize, Debug)]
+pub struct DependsOn {
+    depends_on: Vec<Table>
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Lineage {
+    table: Table,
+    sql: SQL,
+    depends_on: DependsOn,
+}
 
 fn ref_q(values: Rest<String>) -> String {
     values.join(".")
 }
 
+impl Lineage {
+    pub fn get_lineage(root_dir: String) -> Vec<Lineage>{
+        vec![]
+    }
+}
 
 
 impl SQL {
@@ -29,22 +46,19 @@ impl SQL {
         let mut query = String::new();
         f.read_to_string(&mut query).expect("something went wrong reading the file");
         SQL {
-            table: Table {
-                name: "sample".to_string(),
-            },
             path: path,
             query: query,
         }
     }
 
-    pub fn get_ref_tables(&self) -> Vec<Table> {
+    pub fn get_ref_tables(&self) -> DependsOn {
         let mut v:Vec<Table> = Vec::new();        
         let re = Regex::new(r"\{\{\W*ref\(\W*(\w*)\W*(\w*)\W*\)\W*\}\}").unwrap();
         let caps = re.captures_iter(&self.query);
         for cap in caps{
             v.push(Table{ name: vec![&cap[1], &cap[2]].join(".") });
         }
-        return v;
+        DependsOn { depends_on: v}
     }
 
     pub fn get_rendered_query(&self) -> String {
@@ -79,8 +93,8 @@ mod tests {
     fn test_get_ref() {
         let s = SQL::new("src/sample_sqls/sample.sql".to_string());
         let tables = s.get_ref_tables();
-        assert!(tables[0].name == "db.users".to_string());
-        assert!(tables[1].name == "db.role".to_string());
+        assert!(tables.depends_on[0].name == "db.users".to_string());
+        assert!(tables.depends_on[1].name == "db.role".to_string());
     }
 
     #[test]

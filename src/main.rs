@@ -1,5 +1,3 @@
-use std::fmt::format;
-
 use dependsql;
 use walkdir::WalkDir;
 use regex::Regex;
