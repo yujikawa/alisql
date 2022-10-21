@@ -5,6 +5,7 @@ use regex::Regex;
 use minijinja::{Environment, context};
 use minijinja::value::Rest;
 use serde::{Serialize, Deserialize};
+use walkdir::WalkDir;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Table {
@@ -34,8 +35,36 @@ fn ref_q(values: Rest<String>) -> String {
 }
 
 impl Lineage {
-    pub fn get_lineage(root_dir: String) -> Vec<Lineage>{
-        vec![]
+    pub fn get_lineage(root_dir: &str) -> Vec<Lineage>{
+        let mut v:Vec<Lineage> = Vec::new();
+        for entry in WalkDir::new(root_dir) {
+            let entry = entry.unwrap();
+            let re = Regex::new(r"(\w*)\.sql").unwrap();
+            
+            match entry.path().file_name() {
+                Some(path) => { 
+                    if let Some(p) = path.to_str() {
+                        if re.is_match(p) {
+                            let sql = SQL::new(format!("{}/{}", root_dir, p).to_string());
+                            let depends_on = sql.get_ref_tables();
+                            v.push(
+                                Lineage {
+                                    table: Table { name: p.to_string() },
+                                    sql: sql,
+                                    depends_on: depends_on
+                                }
+                            )
+                        }
+                    }
+                    
+                },
+                None => {
+                    println!("Skip")
+                }
+            }
+    
+        }
+        v
     }
 }
 
