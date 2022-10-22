@@ -19,15 +19,10 @@ pub struct SQL {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct DependsOn {
-    depends_on: Vec<Table>
-}
-
-#[derive(Serialize, Deserialize, Debug)]
 pub struct Lineage {
     table: Table,
     sql: SQL,
-    depends_on: DependsOn,
+    depends_on: Vec<Table>,
 }
 
 fn ref_q(values: Rest<String>) -> String {
@@ -35,7 +30,7 @@ fn ref_q(values: Rest<String>) -> String {
 }
 
 impl Lineage {
-    pub fn get_lineage(root_dir: &str) -> Vec<Lineage>{
+    pub fn get_dependencies(root_dir: &str) -> Vec<Lineage>{
         let mut v:Vec<Lineage> = Vec::new();
         for entry in WalkDir::new(root_dir) {
             let entry = entry.unwrap();
@@ -80,14 +75,14 @@ impl SQL {
         }
     }
 
-    pub fn get_ref_tables(&self) -> DependsOn {
+    pub fn get_ref_tables(&self) -> Vec<Table> {
         let mut v:Vec<Table> = Vec::new();        
         let re = Regex::new(r"\{\{\W*ref\(\W*(\w*)\W*(\w*)\W*\)\W*\}\}").unwrap();
         let caps = re.captures_iter(&self.query);
         for cap in caps{
             v.push(Table{ name: vec![&cap[1], &cap[2]].join(".") });
         }
-        DependsOn { depends_on: v}
+        v
     }
 
     pub fn get_rendered_query(&self) -> String {
@@ -122,8 +117,8 @@ mod tests {
     fn test_get_ref() {
         let s = SQL::new("src/sample_sqls/sample.sql".to_string());
         let tables = s.get_ref_tables();
-        assert!(tables.depends_on[0].name == "db.users".to_string());
-        assert!(tables.depends_on[1].name == "db.role".to_string());
+        assert!(tables[0].name == "db.users".to_string());
+        assert!(tables[1].name == "db.role".to_string());
     }
 
     #[test]
