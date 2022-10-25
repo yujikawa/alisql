@@ -19,6 +19,7 @@ pub struct SQL {
     query: String,
 }
 
+#[pyclass]
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Lineage {
     table: Table,
@@ -30,7 +31,10 @@ fn ref_q(values: Rest<String>) -> String {
     values.join(".")
 }
 
+#[pymethods]
 impl Lineage {
+
+    #[staticmethod]
     pub fn get_dependencies(root_dir: &str) -> Vec<Lineage>{
         let mut v:Vec<Lineage> = Vec::new();
         for entry in WalkDir::new(root_dir) {
@@ -139,15 +143,8 @@ u.id = r.user_id
 }
 
 
-
-
-#[pyfunction]
-fn sum_as_string(a: usize, b: usize) -> PyResult<String> {
-    Ok((a + b).to_string())
-}
-
 #[pymodule]
 fn dependsql(_py: Python<'_>, m: &PyModule) -> PyResult<()> {
-    m.add_function(wrap_pyfunction!(sum_as_string, m)?)?;
+    m.add_class::<Lineage>()?;
     Ok(())
 }
