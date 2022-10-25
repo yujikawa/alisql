@@ -3,6 +3,10 @@ name = "dependsql"
 version = "0.1.0"
 edition = "2021"
 
+[lib]
+name = "dependsql"
+crate-type = ["cdylib"]
+
 [dependencies]
 minijinja = "0.23.0"
 regex = "1.6.0"

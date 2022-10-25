@@ -6,6 +6,7 @@ use minijinja::{Environment, context};
 use minijinja::value::Rest;
 use serde::{Serialize, Deserialize};
 use walkdir::WalkDir;
+use pyo3::prelude::*;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Table {
@@ -135,4 +136,18 @@ left join db.role as r on
 u.id = r.user_id
 ".trim()));
     }
+}
+
+
+
+
+#[pyfunction]
+fn sum_as_string(a: usize, b: usize) -> PyResult<String> {
+    Ok((a + b).to_string())
+}
+
+#[pymodule]
+fn dependsql(_py: Python<'_>, m: &PyModule) -> PyResult<()> {
+    m.add_function(wrap_pyfunction!(sum_as_string, m)?)?;
+    Ok(())
 }
