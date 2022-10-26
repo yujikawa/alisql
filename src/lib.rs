@@ -1,19 +1,17 @@
-use std::io::Read;
-use std::fs::File;
-use std::vec;
-use regex::Regex;
-use minijinja::{Environment, context};
 use minijinja::value::Rest;
-use serde::{Serialize, Deserialize};
+use minijinja::{context, Environment};
+use regex::Regex;
+use serde::{Deserialize, Serialize};
+use std::fs::File;
+use std::io::Read;
+use std::vec;
 use walkdir::WalkDir;
-
 
 type TableName = String;
 
 fn ref_q(values: Rest<String>) -> String {
     values.join(".")
 }
-
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 
@@ -24,51 +22,39 @@ pub struct Table {
 }
 
 impl Table {
-
     pub fn new(table: TableName, sql: SQL, depends_on: Vec<TableName>) -> Self {
         Table {
             table: table,
             sql: sql,
-            depends_on: depends_on
-        }  
+            depends_on: depends_on,
+        }
     }
-
 }
-
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Lineage;
 
 impl Lineage {
-
-    pub fn get_dependencies(root_dir: &str) -> Vec<Table>{
-        let mut v:Vec<Table> = Vec::new();
+    pub fn get_dependencies(root_dir: &str) -> Vec<Table> {
+        let mut v: Vec<Table> = Vec::new();
         for entry in WalkDir::new(root_dir) {
             let entry = entry.unwrap();
             let re = Regex::new(r"(\w*)\.sql").unwrap();
-            
+
             match entry.path().file_name() {
-                Some(path) => { 
+                Some(path) => {
                     if let Some(p) = path.to_str() {
                         if re.is_match(p) {
                             let sql = SQL::new(format!("{}/{}", root_dir, p).to_string());
                             let depends_on = sql.get_ref_tables();
-                            v.push(
-                                Table::new (
-                                    p.to_string(),
-                                    sql,
-                                    depends_on
-                                )
-                            )
+                            v.push(Table::new(p.to_string(), sql, depends_on))
                         }
                     }
-                    
-                },
+                }
                 None => {
                     println!("Skip")
                 }
             }
-    
         }
         v
     }
@@ -81,11 +67,11 @@ pub struct SQL {
 }
 
 impl SQL {
-
     pub fn new(path: String) -> Self {
         let mut f = File::open(&path).expect("file not found");
         let mut query = String::new();
-        f.read_to_string(&mut query).expect("something went wrong reading the file");
+        f.read_to_string(&mut query)
+            .expect("something went wrong reading the file");
         SQL {
             path: path,
             query: query,
@@ -93,10 +79,10 @@ impl SQL {
     }
 
     pub fn get_ref_tables(&self) -> Vec<TableName> {
-        let mut v:Vec<TableName> = Vec::new();        
+        let mut v: Vec<TableName> = Vec::new();
         let re = Regex::new(r"\{\{\W*ref\(\W*(\w*)\W*(\w*)\W*\)\W*\}\}").unwrap();
         let caps = re.captures_iter(&self.query);
-        for cap in caps{
+        for cap in caps {
             v.push(vec![&cap[1], &cap[2]].join("."));
         }
         v
@@ -109,9 +95,7 @@ impl SQL {
         let tmpl = env.get_template("sql").unwrap();
         tmpl.render(context!()).unwrap()
     }
-
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -139,15 +123,21 @@ mod tests {
     #[test]
     fn test_get_rendered_query() {
         let s = SQL::new("src/sample_sqls/sample.sql".to_string());
-        let query:String = s.get_rendered_query();
+        let query: String = s.get_rendered_query();
         println!("{}", &query);
-        assert!(query == String::from("
+        assert!(
+            query
+                == String::from(
+                    "
 select 
 u.*
 , r.* 
 from db.users as u
 left join db.role as r on
 u.id = r.user_id
-".trim()));
+"
+                    .trim()
+                )
+        );
     }
 }
