@@ -1,6 +1,6 @@
 [package]
 name = "alisql"
-version = "0.1.1"
+version = "0.1.2"
 authors= ["yujikawa"]
 description = "Analyze SQL"
 license = "Apache-2.0"
@@ -10,7 +10,7 @@ repository = "https://github.com/yujikawa/alisql"
 
 [lib]
 name = "alisql"
-crate-type = ["cdylib"]
+crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 minijinja = "0.23.0"
