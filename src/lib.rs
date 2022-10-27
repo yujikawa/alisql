@@ -83,7 +83,12 @@ impl SQL {
         let re = Regex::new(r"\{\{\W*ref\(\W*(\w*)\W*(\w*)\W*\)\W*\}\}").unwrap();
         let caps = re.captures_iter(&self.query);
         for cap in caps {
-            v.push(vec![&cap[1], &cap[2]].join("."));
+            let t = if cap[2].is_empty() {
+                vec![&cap[1]]
+            } else {
+                vec![&cap[1], &cap[2]]
+            };
+            v.push(t.join("."));
         }
         v
     }
@@ -117,7 +122,7 @@ mod tests {
         let s = SQL::new("src/sample_sqls/sample.sql".to_string());
         let tables = s.get_ref_tables();
         assert!(tables[0] == "db.users".to_string());
-        assert!(tables[1] == "db.role".to_string());
+        assert!(tables[1] == "role".to_string());
     }
 
     #[test]
@@ -133,7 +138,7 @@ select
 u.*
 , r.* 
 from db.users as u
-left join db.role as r on
+left join role as r on
 u.id = r.user_id
 "
                     .trim()
