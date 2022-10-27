@@ -5,6 +5,8 @@ authors= ["yujikawa"]
 description = "Analyze SQL"
 license = "Apache-2.0"
 edition = "2021"
+exclude = [".github"]
+repository = "https://github.com/yujikawa/alisql"
 
 [lib]
 name = "alisql"
