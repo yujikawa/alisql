@@ -1,10 +1,10 @@
 [package]
-name = "dependsql"
+name = "alisql"
 version = "0.1.0"
 edition = "2021"
 
 [lib]
-name = "dependsql"
+name = "alisql"
 crate-type = ["cdylib"]
 
 [dependencies]
