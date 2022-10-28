@@ -4,3 +4,8 @@
 [![alisql at docs.rs](https://docs.rs/alisql/badge.svg)](https://docs.rs/alisql)
 
 This is library to analize SQL with jinja template.
+
+```rust
+use alias;
+let d = alias::get_dependencies("sqls") // You chose directory name
+```

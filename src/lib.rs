@@ -30,35 +30,7 @@ impl Table {
         }
     }
 }
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct Lineage;
-
-impl Lineage {
-    pub fn get_dependencies(root_dir: &str) -> Vec<Table> {
-        let mut v: Vec<Table> = Vec::new();
-        for entry in WalkDir::new(root_dir) {
-            let entry = entry.unwrap();
-            let re = Regex::new(r"(\w*)\.sql").unwrap();
-
-            match entry.path().file_name() {
-                Some(path) => {
-                    if let Some(p) = path.to_str() {
-                        if re.is_match(p) {
-                            let sql = SQL::new(format!("{}/{}", root_dir, p).to_string());
-                            let depends_on = sql.get_ref_tables();
-                            v.push(Table::new(p.to_string(), sql, depends_on))
-                        }
-                    }
-                }
-                None => {
-                    println!("Skip")
-                }
-            }
-        }
-        v
-    }
-}
+/// Get dependencies from SQL written ref macro with Jinja
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct SQL {
@@ -100,6 +72,33 @@ impl SQL {
         let tmpl = env.get_template("sql").unwrap();
         tmpl.render(context!()).unwrap()
     }
+}
+
+/// Get dependencies from SQL written ref macro with Jinja.
+/// # Example
+/// let d = get_dependencies("sqls") // You chose directory name
+pub fn get_dependencies(root_dir: &str) -> Vec<Table> {
+    let mut v: Vec<Table> = Vec::new();
+    for entry in WalkDir::new(root_dir) {
+        let entry = entry.unwrap();
+        let re = Regex::new(r"(\w*)\.sql").unwrap();
+
+        match entry.path().file_name() {
+            Some(path) => {
+                if let Some(p) = path.to_str() {
+                    if re.is_match(p) {
+                        let sql = SQL::new(format!("{}/{}", root_dir, p).to_string());
+                        let depends_on = sql.get_ref_tables();
+                        v.push(Table::new(p.to_string(), sql, depends_on))
+                    }
+                }
+            }
+            None => {
+                println!("Skip")
+            }
+        }
+    }
+    v
 }
 
 #[cfg(test)]
