@@ -40,7 +40,7 @@ pub trait Analyzer {
         let re = Regex::new(r"(\w*)\.sql").unwrap();
         re.is_match(file_name)
     }
-    fn get_analized_table(&self) -> Table; 
+    fn get_analized_table(&self) -> Table;
 }
 
 #[derive(Debug, Clone)]
@@ -70,7 +70,7 @@ impl Analyzer for RegexSQLAnalyser {
         f.read_to_string(&mut query)
             .expect("something went wrong reading the file");
         RegexSQLAnalyser {
-            sql: SQL::new(path, query)
+            sql: SQL::new(path, query),
         }
     }
 
@@ -100,10 +100,7 @@ impl Analyzer for RegexSQLAnalyser {
         let table_name = &caps[1];
         Table::new(table_name.to_string(), self.sql.clone(), depends_on)
     }
-
 }
-
-
 
 #[cfg(test)]
 mod tests {

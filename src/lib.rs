@@ -1,7 +1,6 @@
 mod sql_analyzer;
-use sql_analyzer::analyzer::{RegexSQLAnalyser, Analyzer, Table};
+use sql_analyzer::analyzer::{Analyzer, RegexSQLAnalyser, Table};
 use walkdir::WalkDir;
-
 
 /// Get dependencies from SQL written ref macro with Jinja.
 /// # Example
@@ -14,7 +13,8 @@ pub fn get_dependencies(root_dir: &str) -> Vec<Table> {
             Some(path) => {
                 if let Some(p) = path.to_str() {
                     if RegexSQLAnalyser::is_sql_file(p) {
-                        let analyzer = RegexSQLAnalyser::new(format!("{}/{}", root_dir, p).to_string());
+                        let analyzer =
+                            RegexSQLAnalyser::new(format!("{}/{}", root_dir, p).to_string());
                         let table = analyzer.get_analized_table();
                         v.push(table)
                     }
@@ -27,5 +27,3 @@ pub fn get_dependencies(root_dir: &str) -> Vec<Table> {
     }
     v
 }
-
-
