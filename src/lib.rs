@@ -13,9 +13,9 @@ use walkdir::WalkDir;
 /// First, create sql like Jinja.
 /// ```sql
 /// -- src/sample_sqls/sample.sql
-/// select 
+/// select
 /// u.*
-/// , r.* 
+/// , r.*
 /// from {{ ref("db", "users") }} as u
 /// left join {{ ref("role") }} as r on
 /// u.id = r.user_id
@@ -23,19 +23,19 @@ use walkdir::WalkDir;
 ///
 /// ```sql
 /// -- src/sample_sqls/sample2.sql
-/// select 
+/// select
 /// u.*
-/// , r.* 
+/// , r.*
 /// from {{ ref("db", "sales") }} as u
 /// left join {{ ref("db", "sale_detail") }} as r on
 /// u.id = r.sale_id
 /// ```
 ///
-/// Use alias lib from main function. 
+/// Use alias lib from main function.
 /// ```rust
 /// use alias;
 /// fn main() {
-///     let d = alias::get_dependencies("src/sample_sqls") 
+///     let d = alias::get_dependencies("src/sample_sqls")
 /// }
 /// ```
 /// ## Result
@@ -100,9 +100,9 @@ pub fn get_dependencies(root_dir: &str) -> Vec<Table> {
 /// - BT : bottom to top
 /// - RL : right to left
 /// - LR : left to right
-/// 
+///
 /// Reference: [Mermaid](https://mermaid-js.github.io/mermaid/#/./flowchart?id=flowchart-orientation)
-/// 
+///
 /// ## Result
 /// ```mermaid
 ///graph TD;
