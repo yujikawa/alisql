@@ -9,9 +9,9 @@ type TableName = String;
 
 #[derive(Debug)]
 pub struct Table {
-    table: TableName,
-    sql: SQL,
-    depends_on: Vec<TableName>,
+    pub table: TableName,
+    pub sql: SQL,
+    pub depends_on: Vec<TableName>,
 }
 
 impl Table {
