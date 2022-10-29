@@ -30,7 +30,7 @@ pub fn get_dependencies(root_dir: &str) -> Vec<Table> {
 }
 
 /// Get dependencies graph from SQL with Mermaid.
-/// 
+///
 /// orientation are
 /// - TB : top to bottom
 /// - TD : top-down/ same as top to bottom
