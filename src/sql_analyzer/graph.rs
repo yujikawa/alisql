@@ -1,16 +1,16 @@
-use super::analyzer::{Table};
+use super::analyzer::Table;
 
 pub struct Mermaid {
     tables: Vec<Table>,
 }
 
 impl Mermaid {
-    fn new(tables: Vec<Table>) -> Self {
-        Mermaid { tables: tables}
+    pub fn new(tables: Vec<Table>) -> Self {
+        Mermaid { tables: tables }
     }
 
-    fn get_graph(&self) -> String {
-        let mut temp: Vec<String>= Vec::new();
+    pub fn get_graph(&self) -> String {
+        let mut temp: Vec<String> = Vec::new();
         temp.push("graph TD".to_string());
         for table in &self.tables {
             for depends_table in &table.depends_on {
@@ -20,7 +20,6 @@ impl Mermaid {
         temp.join(";\n") + ";\n"
     }
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -37,5 +36,4 @@ mod tests {
         let mermaid = m.get_graph();
         assert!(mermaid == "graph TD;\ndb.users --> sample;\nrole --> sample;\n".to_string());
     }
-   
 }

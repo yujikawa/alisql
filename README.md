@@ -6,7 +6,7 @@
 This is library to analize SQL with jinja template.
 
 ## Example
-
+### Get dependecies
 First, create sql like Jinja.
 
 ```sql
@@ -65,4 +65,34 @@ d = [
         ],
     },
 ]
+```
+
+### Get mermaid graph
+```rust
+use alisql;
+
+fn main() {
+    let m = alisql::get_mermaid("src/sample_sqls");
+    println!("{}", m);
+}
+```
+
+Variable m is 
+
+```
+graph TD;
+db.users --> sample;
+role --> sample;
+db.sales --> sample2;
+db.sale_detail --> sample2;
+```
+
+This is shown in the following graph.
+
+```mermaid
+graph TD;
+db.users --> sample;
+role --> sample;
+db.sales --> sample2;
+db.sale_detail --> sample2;
 ```
