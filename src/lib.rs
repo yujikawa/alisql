@@ -6,8 +6,6 @@ use sql_analyzer::{
 use walkdir::WalkDir;
 
 /// Get dependencies from SQL written ref macro with Jinja.
-/// # Example
-/// let d: Vec<Table> = get_dependencies("sqls");
 pub fn get_dependencies(root_dir: &str) -> Vec<Table> {
     let mut v: Vec<Table> = Vec::new();
     for entry in WalkDir::new(root_dir) {
@@ -32,10 +30,19 @@ pub fn get_dependencies(root_dir: &str) -> Vec<Table> {
 }
 
 /// Get dependencies graph from SQL with Mermaid.
-/// # Example
-/// let mermaid = get_mermaid("sqls");
-pub fn get_mermaid(root_dir: &str) -> String {
+///
+/// orientation are
+/// - TB : top to bottom
+/// - TD : top-down/ same as top to bottom
+/// - BT : bottom to top
+/// - RL : right to left
+/// - LR : left to right
+///
+/// ## Reference
+/// - [Mermaid](https://mermaid-js.github.io/mermaid/#/./flowchart?id=flowchart-orientation)
+
+pub fn get_mermaid(root_dir: &str, orientation: &str) -> String {
     let tables = get_dependencies(root_dir);
     let m = Mermaid::new(tables);
-    m.get_graph()
+    m.get_graph(orientation)
 }

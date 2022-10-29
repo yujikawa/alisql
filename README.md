@@ -72,7 +72,7 @@ d = [
 use alisql;
 
 fn main() {
-    let m = alisql::get_mermaid("src/sample_sqls");
+    let m = alisql::get_mermaid("src/sample_sqls", "TD");
     println!("{}", m);
 }
 ```
