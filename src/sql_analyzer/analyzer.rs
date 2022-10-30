@@ -1,13 +1,14 @@
 use minijinja::value::Rest;
 use minijinja::{context, Environment};
 use regex::Regex;
+use serde::{Serialize, Deserialize};
 use std::fs::File;
 use std::io::Read;
 use std::vec;
 
 type TableName = String;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Table {
     pub table: TableName,
     pub sql: SQL,
@@ -43,7 +44,7 @@ pub trait Analyzer {
     fn get_analized_table(&self) -> Table;
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SQL {
     pub path: String,
     pub query: String,
