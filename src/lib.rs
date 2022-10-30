@@ -1,4 +1,4 @@
-mod sql_analyzer;
+pub mod sql_analyzer;
 use sql_analyzer::{
     analyzer::{Analyzer, RegexSQLAnalyser, Table},
     graph::Mermaid,
