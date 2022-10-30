@@ -8,6 +8,15 @@ use std::vec;
 
 type TableName = String;
 
+fn get_rendered_query(query: &str) -> String {
+    let mut env = Environment::new();
+    let ref_q = |i: Rest<String>| -> String { i.join(".") };
+    env.add_function("ref", ref_q);
+    env.add_template("sql", query).unwrap();
+    let tmpl = env.get_template("sql").unwrap();
+    tmpl.render(context!()).unwrap()
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Table {
     pub table: TableName,
@@ -28,15 +37,6 @@ pub trait Analyzer {
     fn new(path: String) -> Self;
     fn get_ref_tables(&self) -> Vec<TableName>;
     fn get_query(&self) -> &String;
-    fn get_rendered_query(&self) -> String {
-        let mut env = Environment::new();
-        let ref_q = |i: Rest<String>| -> String { i.join(".") };
-        env.add_function("ref", ref_q);
-        let query = self.get_query();
-        env.add_template("sql", &query).unwrap();
-        let tmpl = env.get_template("sql").unwrap();
-        tmpl.render(context!()).unwrap()
-    }
     fn is_sql_file(file_name: &str) -> bool {
         let re = Regex::new(r"(\w*)\.sql").unwrap();
         re.is_match(file_name)
@@ -48,13 +48,15 @@ pub trait Analyzer {
 pub struct SQL {
     pub path: String,
     pub query: String,
+    pub rendered_query: String,
 }
 
 impl SQL {
-    pub fn new(path: String, query: String) -> Self {
+    pub fn new(path: String, query: String, rendered_query: String) -> Self {
         SQL {
             path: path,
             query: query,
+            rendered_query: rendered_query,
         }
     }
 }
@@ -70,8 +72,9 @@ impl Analyzer for RegexSQLAnalyser {
         let mut query = String::new();
         f.read_to_string(&mut query)
             .expect("something went wrong reading the file");
+        let rendered_query = get_rendered_query(&query);
         RegexSQLAnalyser {
-            sql: SQL::new(path, query),
+            sql: SQL::new(path, query, rendered_query),
         }
     }
 
@@ -129,10 +132,8 @@ mod tests {
     #[test]
     fn test_get_rendered_query() {
         let s = RegexSQLAnalyser::new("src/sample_sqls/sample.sql".to_string());
-        let query: String = s.get_rendered_query();
-        println!("{}", &query);
         assert!(
-            query
+            s.sql.rendered_query
                 == String::from(
                     "
 select 
