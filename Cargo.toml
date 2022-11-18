@@ -1,6 +1,6 @@
 [package]
 name = "alisql"
-version = "0.1.12"
+version = "0.1.13"
 authors= ["yujikawa"]
 description = "Analyze SQL"
 license = "Apache-2.0"
