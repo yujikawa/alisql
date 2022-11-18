@@ -23,7 +23,7 @@
 //!```rust no_run
 //!use alisql;
 //!
-//!let d = alisql::get_dependencies("src/sample_sqls");
+//!let d = alisql::get_dependencies("src/sample_sqls", 5);
 //! dbg!(d);
 //!```
 //!### Result
@@ -65,7 +65,7 @@
 //! ```rust no_run
 //! use alisql;
 //!
-//! let m = alisql::get_mermaid("src/sample_sqls", "TD");
+//! let m = alisql::get_mermaid("src/sample_sqls", "TD", 5);
 //! println!("{}", m);
 //!```
 //!
@@ -87,9 +87,9 @@ use sql_analyzer::{
 };
 use walkdir::WalkDir;
 
-pub fn get_dependencies(root_dir: &str) -> Vec<Table> {
+pub fn get_dependencies(root_dir: &str, max_depth: usize) -> Vec<Table> {
     let mut v: Vec<Table> = Vec::new();
-    for entry in WalkDir::new(root_dir) {
+    for entry in WalkDir::new(root_dir).max_depth(max_depth) {
         let entry = entry.unwrap();
         match entry.path().file_name() {
             Some(path) => {
@@ -110,8 +110,8 @@ pub fn get_dependencies(root_dir: &str) -> Vec<Table> {
     v
 }
 
-pub fn get_mermaid(root_dir: &str, orientation: &str) -> String {
-    let tables = get_dependencies(root_dir);
+pub fn get_mermaid(root_dir: &str, orientation: &str, max_depth: usize) -> String {
+    let tables = get_dependencies(root_dir, max_depth);
     let m = Mermaid::new(tables);
     m.get_graph(orientation)
 }
