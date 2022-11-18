@@ -2,6 +2,7 @@ use minijinja::value::Rest;
 use minijinja::{context, Environment};
 use regex::Regex;
 use serde::{Deserialize, Serialize};
+use std::ffi::OsString;
 use std::fs::File;
 use std::io::Read;
 use std::vec;
@@ -34,7 +35,7 @@ impl Table {
     }
 }
 pub trait Analyzer {
-    fn new(path: String) -> Self;
+    fn new(path: OsString) -> Self;
     fn get_ref_tables(&self) -> Vec<TableName>;
     fn get_query(&self) -> &String;
     fn is_sql_file(file_name: &str) -> bool {
@@ -46,13 +47,13 @@ pub trait Analyzer {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SQL {
-    pub path: String,
+    pub path: OsString,
     pub query: String,
     pub rendered_query: String,
 }
 
 impl SQL {
-    pub fn new(path: String, query: String, rendered_query: String) -> Self {
+    pub fn new(path: OsString, query: String, rendered_query: String) -> Self {
         SQL {
             path: path,
             query: query,
@@ -67,7 +68,7 @@ pub struct RegexSQLAnalyser {
 }
 
 impl Analyzer for RegexSQLAnalyser {
-    fn new(path: String) -> Self {
+    fn new(path: OsString) -> Self {
         let mut f = File::open(&path).expect("file not found");
         let mut query = String::new();
         f.read_to_string(&mut query)
@@ -99,7 +100,7 @@ impl Analyzer for RegexSQLAnalyser {
 
     fn get_analized_table(&self) -> Table {
         let re = Regex::new(r"(\w*)\.sql").unwrap();
-        let caps = re.captures(&self.sql.path).unwrap();
+        let caps = re.captures(self.sql.path.to_str().unwrap()).unwrap();
         let depends_on = self.get_ref_tables();
         let table_name = &caps[1];
         Table::new(table_name.to_string(), self.sql.clone(), depends_on)
@@ -108,22 +109,19 @@ impl Analyzer for RegexSQLAnalyser {
 
 #[cfg(test)]
 mod tests {
+    use std::str::FromStr;
+
     use super::*;
     #[test]
     fn test_create_table() {
         let t = "users".to_string();
         assert!(t == "users".to_string());
     }
-    #[test]
-    fn test_create_sql() {
-        let s = RegexSQLAnalyser::new("src/sample_sqls/sample.sql".to_string());
-        assert!(s.sql.path == "src/sample_sqls/sample.sql".to_string());
-        println!("{:?}", s.sql.query);
-    }
 
     #[test]
     fn test_get_ref() {
-        let s = RegexSQLAnalyser::new("src/sample_sqls/sample.sql".to_string());
+        let path = OsString::from_str("src/sample_sqls/level1/sample.sql").unwrap();
+        let s = RegexSQLAnalyser::new(path);
         let tables = s.get_ref_tables();
         assert!(tables[0] == "db.users".to_string());
         assert!(tables[1] == "role".to_string());
@@ -131,7 +129,8 @@ mod tests {
 
     #[test]
     fn test_get_rendered_query() {
-        let s = RegexSQLAnalyser::new("src/sample_sqls/sample.sql".to_string());
+        let path = OsString::from_str("src/sample_sqls/level1/sample.sql").unwrap();
+        let s = RegexSQLAnalyser::new(path);
         assert!(
             s.sql.rendered_query
                 == String::from(

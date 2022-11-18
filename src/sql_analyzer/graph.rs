@@ -23,6 +23,9 @@ impl Mermaid {
 
 #[cfg(test)]
 mod tests {
+    use std::ffi::OsString;
+    use std::str::FromStr;
+
     use crate::sql_analyzer::analyzer::Analyzer;
 
     use super::super::analyzer::RegexSQLAnalyser;
@@ -30,7 +33,8 @@ mod tests {
 
     #[test]
     fn test_get_graph() {
-        let s = RegexSQLAnalyser::new("src/sample_sqls/sample.sql".to_string());
+        let path = OsString::from_str("src/sample_sqls/level1/sample.sql").unwrap();
+        let s = RegexSQLAnalyser::new(path);
         let tables = s.get_analized_table();
         let m = Mermaid::new(vec![tables]);
         let mermaid = m.get_graph("TD");
