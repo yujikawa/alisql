@@ -10,7 +10,7 @@ This is library to analize SQL with jinja template.
 First, create sql like Jinja.
 
 ```sql
--- src/sample_sqls/sample.sql
+-- src/sample_sqls/level1/sample.sql
 select 
 u.*
 , r.* 
@@ -45,7 +45,7 @@ d = [
     Table {
         table: "sample",
         sql: SQL {
-            path: "src/sample_sqls/sample.sql",
+            path: "src/sample_sqls/level1/sample.sql",
             query: "select \nu.*\n, r.* \nfrom {{ ref(\"db\", \"users\") }} as u\nleft join {{ ref(\"role\") }} as r on\nu.id = r.user_id",
         },
         depends_on: [
