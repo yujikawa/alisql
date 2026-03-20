@@ -3,82 +3,72 @@
 [![alisql at crates.io](https://img.shields.io/crates/v/alisql.svg)](https://crates.io/crates/alisql)
 [![alisql at docs.rs](https://docs.rs/alisql/badge.svg)](https://docs.rs/alisql)
 
-This is library to analize SQL with jinja template.
+SQL ファイル内の Jinja2 `{{ ref() }}` マクロを解析して、テーブル間の依存関係を抽出・可視化するツールです。
 
-## Example
-### Get dependecies
-First, create sql like Jinja.
+---
 
-```sql
--- src/sample_sqls/level1/sample.sql
-select 
-u.*
-, r.* 
-from {{ ref("db", "users") }} as u
-left join {{ ref("role") }} as r on
-u.id = r.user_id
+## インストール
+
+```bash
+cargo install alisql
 ```
 
-```sql
--- src/sample_sqls/sample2.sql
-select 
-u.*
-, r.* 
-from {{ ref("db", "sales") }} as u
-left join {{ ref("db", "sale_detail") }} as r on
-u.id = r.sale_id
+または [Releases](https://github.com/yujikawa/alisql/releases) からプラットフォーム別のバイナリをダウンロードできます。
+
+---
+
+## CLI
+
+### deps — 依存関係を表示
+
+```bash
+# テキスト形式（デフォルト）
+alisql deps ./sql
+
+# JSON形式
+alisql deps ./sql --format json
+
+# 探索する深さを指定（デフォルト: 5）
+alisql deps ./sql --max-depth 3
 ```
 
-Use alias lib from main function. 
-
-```rust
-use alias;
-fn main() {
-    let d = alias::get_dependencies("src/sample_sqls") 
-}
+**出力例（text）:**
+```
+[sample]
+  <- db.users
+  <- role
+[sample2]
+  <- db.sales
+  <- db.sale_detail
 ```
 
-Result is..
-
-```rust
-d = [
-    Table {
-        table: "sample",
-        sql: SQL {
-            path: "src/sample_sqls/level1/sample.sql",
-            query: "select \nu.*\n, r.* \nfrom {{ ref(\"db\", \"users\") }} as u\nleft join {{ ref(\"role\") }} as r on\nu.id = r.user_id",
-        },
-        depends_on: [
-            "db.users",
-            "role",
-        ],
-    },
-    Table {
-        table: "sample2",
-        sql: SQL {
-            path: "src/sample_sqls/sample2.sql",
-            query: "select \nu.*\n, r.* \nfrom {{ ref(\"db\", \"sales\") }} as u\nleft join {{ ref(\"db\", \"sale_detail\") }} as r on\nu.id = r.sale_id",
-        },
-        depends_on: [
-            "db.sales",
-            "db.sale_detail",
-        ],
-    },
+**出力例（json）:**
+```json
+[
+  {
+    "table": "sample",
+    "depends_on": ["db.users", "role"]
+  },
+  {
+    "table": "sample2",
+    "depends_on": ["db.sales", "db.sale_detail"]
+  }
 ]
 ```
 
-### Get mermaid graph
-```rust
-use alisql;
+---
 
-fn main() {
-    let m = alisql::get_mermaid("src/sample_sqls", "TD");
-    println!("{}", m);
-}
+### graph — Mermaid 図を出力
+
+```bash
+# デフォルト（上から下: TD）
+alisql graph ./sql
+
+# 向きを指定（TB / TD / BT / RL / LR）
+alisql graph ./sql --orientation lr
 ```
 
-Variable m is 
-
+**出力例:**
 ```
 graph TD;
 db.users --> sample;
@@ -87,7 +77,7 @@ db.sales --> sample2;
 db.sale_detail --> sample2;
 ```
 
-This is shown in the following graph.
+GitHub や Notion などで Mermaid をレンダリングすると、次のようなグラフになります。
 
 ```mermaid
 graph TD;
@@ -96,3 +86,44 @@ role --> sample;
 db.sales --> sample2;
 db.sale_detail --> sample2;
 ```
+
+---
+
+## Rust ライブラリとして使う
+
+```toml
+# Cargo.toml
+[dependencies]
+alisql = "0.2"
+```
+
+### 依存関係を取得
+
+```rust
+let tables = alisql::get_dependencies("./sql", 5);
+for table in &tables {
+    println!("{} depends on {:?}", table.table, table.depends_on);
+}
+```
+
+### Mermaid 図を取得
+
+```rust
+let graph = alisql::get_mermaid("./sql", "TD", 5);
+println!("{}", graph);
+```
+
+---
+
+## SQL ファイルの書き方
+
+`{{ ref("table") }}` または `{{ ref("schema", "table") }}` の形式で依存テーブルを参照します。
+
+```sql
+-- sql/orders.sql
+select o.*, u.name
+from {{ ref("db", "orders") }} as o
+left join {{ ref("users") }} as u on o.user_id = u.id
+```
+
+このファイルを解析すると、`orders` テーブルが `db.orders` と `users` に依存していることが分かります。

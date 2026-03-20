@@ -1,6 +1,6 @@
 [package]
 name = "alisql"
-version = "0.1.13"
+version = "0.2.0"
 authors= ["yujikawa"]
 description = "Analyze SQL"
 license = "Apache-2.0"
@@ -13,8 +13,9 @@ name = "alisql"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-minijinja = "0.23.0"
-regex = "1.6.0"
+clap = { version = "4", features = ["derive"] }
+minijinja = "2"
+regex = "1"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-walkdir = "2.3.2"
+walkdir = "2"
