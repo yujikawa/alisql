@@ -1,27 +1,18 @@
+name: Publish
+
 on:
   push:
-    # Pattern matched against refs/tags
-    tags:        
-      - '*'           # Push events to every tag not containing /
+    tags:
+      - '*'
   workflow_dispatch:
-
-name: Publish
 
 jobs:
   publish:
-    name: Publish
+    name: Publish to crates.io
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout sources
-        uses: actions/checkout@v2
-
-      - name: Install stable toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          override: true
-
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
       - run: cargo publish --token ${CRATES_TOKEN}
         env:
           CRATES_TOKEN: ${{ secrets.CRATES_TOKEN }}
