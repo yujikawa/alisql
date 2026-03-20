@@ -88,7 +88,11 @@ fn main() {
     let cli = Cli::parse();
 
     match cli.command {
-        Commands::Deps { dir, max_depth, format } => {
+        Commands::Deps {
+            dir,
+            max_depth,
+            format,
+        } => {
             let tables = alisql::get_dependencies(&dir, max_depth);
             let output = match format {
                 Format::Json => format_deps_json(&tables),
@@ -96,7 +100,11 @@ fn main() {
             };
             println!("{}", output);
         }
-        Commands::Graph { dir, max_depth, orientation } => {
+        Commands::Graph {
+            dir,
+            max_depth,
+            orientation,
+        } => {
             let graph = alisql::get_mermaid(&dir, orientation.as_str(), max_depth);
             println!("{}", graph);
         }
