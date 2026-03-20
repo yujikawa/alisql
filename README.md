@@ -3,36 +3,36 @@
 [![alisql at crates.io](https://img.shields.io/crates/v/alisql.svg)](https://crates.io/crates/alisql)
 [![alisql at docs.rs](https://docs.rs/alisql/badge.svg)](https://docs.rs/alisql)
 
-SQL ファイル内の Jinja2 `{{ ref() }}` マクロを解析して、テーブル間の依存関係を抽出・可視化するツールです。
+A tool for analyzing SQL files that use Jinja2 `{{ ref() }}` macros, extracting table dependencies and visualizing them as graphs.
 
 ---
 
-## インストール
+## Installation
 
 ```bash
 cargo install alisql
 ```
 
-または [Releases](https://github.com/yujikawa/alisql/releases) からプラットフォーム別のバイナリをダウンロードできます。
+Or download a pre-built binary for your platform from [Releases](https://github.com/yujikawa/alisql/releases).
 
 ---
 
 ## CLI
 
-### deps — 依存関係を表示
+### deps — Show dependencies
 
 ```bash
-# テキスト形式（デフォルト）
+# Text format (default)
 alisql deps ./sql
 
-# JSON形式
+# JSON format
 alisql deps ./sql --format json
 
-# 探索する深さを指定（デフォルト: 5）
+# Limit search depth (default: 5)
 alisql deps ./sql --max-depth 3
 ```
 
-**出力例（text）:**
+**Output (text):**
 ```
 [sample]
   <- db.users
@@ -42,7 +42,7 @@ alisql deps ./sql --max-depth 3
   <- db.sale_detail
 ```
 
-**出力例（json）:**
+**Output (json):**
 ```json
 [
   {
@@ -58,17 +58,17 @@ alisql deps ./sql --max-depth 3
 
 ---
 
-### graph — Mermaid 図を出力
+### graph — Generate a Mermaid diagram
 
 ```bash
-# デフォルト（上から下: TD）
+# Default orientation (top-down: TD)
 alisql graph ./sql
 
-# 向きを指定（TB / TD / BT / RL / LR）
+# Specify orientation (TB / TD / BT / RL / LR)
 alisql graph ./sql --orientation lr
 ```
 
-**出力例:**
+**Output:**
 ```
 graph TD;
 db.users --> sample;
@@ -77,7 +77,7 @@ db.sales --> sample2;
 db.sale_detail --> sample2;
 ```
 
-GitHub や Notion などで Mermaid をレンダリングすると、次のようなグラフになります。
+Rendered as a Mermaid diagram:
 
 ```mermaid
 graph TD;
@@ -89,7 +89,7 @@ db.sale_detail --> sample2;
 
 ---
 
-## Rust ライブラリとして使う
+## Using as a Rust library
 
 ```toml
 # Cargo.toml
@@ -97,7 +97,7 @@ db.sale_detail --> sample2;
 alisql = "0.2"
 ```
 
-### 依存関係を取得
+### Get dependencies
 
 ```rust
 let tables = alisql::get_dependencies("./sql", 5);
@@ -106,7 +106,7 @@ for table in &tables {
 }
 ```
 
-### Mermaid 図を取得
+### Get a Mermaid diagram
 
 ```rust
 let graph = alisql::get_mermaid("./sql", "TD", 5);
@@ -115,9 +115,9 @@ println!("{}", graph);
 
 ---
 
-## SQL ファイルの書き方
+## Writing SQL files
 
-`{{ ref("table") }}` または `{{ ref("schema", "table") }}` の形式で依存テーブルを参照します。
+Reference dependent tables using `{{ ref("table") }}` or `{{ ref("schema", "table") }}`.
 
 ```sql
 -- sql/orders.sql
@@ -126,4 +126,4 @@ from {{ ref("db", "orders") }} as o
 left join {{ ref("users") }} as u on o.user_id = u.id
 ```
 
-このファイルを解析すると、`orders` テーブルが `db.orders` と `users` に依存していることが分かります。
+Analyzing this file reveals that the `orders` table depends on `db.orders` and `users`.
